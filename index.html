@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Development Portfolio</title>
+    <title>My Interactive Portfolio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -33,18 +33,19 @@
         <header class="text-center mb-8">
             <h1 class="text-4xl md:text-5xl font-bold text-white">Kevin Evans</h1>
             <h1 class="text-4xl md:text-5xl font-bold text-white">My Interactive Projects</h1>
-            <p class="text-lg text-gray-400 mt-2">Click a tab to load a game</p>
+            <p class="text-lg text-gray-400 mt-2">Click a tab to load a project</p>
         </header>
 
         <!-- Tabs Navigation -->
         <nav class="flex justify-center flex-wrap gap-2 sm:gap-4 mb-8" id="tabs">
-            <button class="tab-button active text-sm sm:text-base font-semibold py-2 px-4 rounded-full bg-gray-700 hover:bg-gray-600" data-game="taxPlinkov2">Tax Plinko</button>
+            <button class="tab-button active text-sm sm:text-base font-semibold py-2 px-4 rounded-full bg-gray-700 hover:bg-gray-600" data-game="cdsVisualizer">CDS Risk Visualizer</button>
+            <button class="tab-button text-sm sm:text-base font-semibold py-2 px-4 rounded-full bg-gray-700 hover:bg-gray-600" data-game="taxPlinkov2">Tax Plinko</button>
             <button class="tab-button text-sm sm:text-base font-semibold py-2 px-4 rounded-full bg-gray-700 hover:bg-gray-600" data-game="farmRace">Farm Race</button>
             <button class="tab-button text-sm sm:text-base font-semibold py-2 px-4 rounded-full bg-gray-700 hover:bg-gray-600" data-game="collector">Collector Game</button>
             <button class="tab-button text-sm sm:text-base font-semibold py-2 px-4 rounded-full bg-gray-700 hover:bg-gray-600" data-game="taxPlinkov1">Tax Plinko (Classic)</button>
         </nav>
 
-        <!-- Game Display Area -->
+        <!-- Display Area -->
         <main class="bg-gray-900 p-2 rounded-lg shadow-2xl">
             <iframe id="game-frame"></iframe>
         </main>
@@ -55,9 +56,530 @@
     </div>
 
     <script>
-        // --- Game Content ---
-        // The full HTML content of each game is stored here.
+        // --- Project Content ---
+        // The full HTML content of each project is stored here.
         const gameContent = {
+            cdsVisualizer: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDS Sawtooth Risk Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .drag-over { border-color: #2563eb; background-color: #eff6ff; }
+        .chart-container { position: relative; height: 45vh; width: 100%; margin: auto; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Multi-Customer CDS Risk & Pricing Visualizer</h1>
+            <p class="mt-2 text-lg text-gray-600">Visualize risk profiles and pricing curves for each customer.</p>
+        </header>
+        <main>
+            <div class="mb-6 max-w-4xl mx-auto">
+                <label for="credit-details" class="block text-sm font-medium text-gray-700 mb-1">Credit & Terms</label>
+                <input type="text" id="credit-details" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="e.g., Credit ABC, Restructuring, Non-Voting">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-4xl mx-auto">
+                <div>
+                    <label for="pl-limit" class="block text-sm font-medium text-gray-700 mb-1">P/L Limit</label>
+                    <select id="pl-limit" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <option>$0</option> <option>-$250</option> <option>-$500</option> <option>-$750</option> <option>-$1000</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="notional-change" class="block text-sm font-medium text-gray-700 mb-1">Notional Change</label>
+                    <select id="notional-change" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <option>$0</option> <option>-$250</option> <option>-$500</option> <option>-$750</option> <option>-$1000</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="delta-change" class="block text-sm font-medium text-gray-700 mb-1">Delta Change</label>
+                    <select id="delta-change" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <option>$0</option> <option>$250</option> <option>$500</option>
+                    </select>
+                </div>
+            </div>
+            <div id="risk-drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 md:p-12 text-center cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-100">
+                <div class="flex flex-col items-center justify-center">
+                    <svg class="w-12 h-12 text-gray-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>
+                    <p class="text-lg font-medium text-gray-700">Drag & Drop Risk Spreadsheet</p>
+                    <p class="text-sm text-gray-500 mt-1">or click to select file</p>
+                    <input type="file" id="risk-file-input" class="hidden" accept=".xlsx, .xls, .csv">
+                    <p class="text-xs text-gray-400 mt-4">Columns: 'Customer', 'Maturity', 'Risk'</p>
+                </div>
+            </div>
+            <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative my-4" role="alert">
+                <strong class="font-bold">Error:</strong>
+                <span class="block sm:inline" id="error-text"></span>
+            </div>
+            <div id="risk-charts-container" class="mt-8 hidden">
+                 <h2 id="main-risk-chart-title" class="text-2xl font-bold text-center mb-6 text-gray-800"></h2>
+            </div>
+            <hr class="my-12 border-gray-300">
+            <div id="price-drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 md:p-12 text-center cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-100">
+                <div class="flex flex-col items-center justify-center">
+                     <svg class="w-12 h-12 text-gray-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414-.336.75-.75.75h-.75m0-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75-.75v-.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <p class="text-lg font-medium text-gray-700">Drag & Drop Pricing Spreadsheet</p>
+                    <p class="text-sm text-gray-500 mt-1">or click to select file</p>
+                    <input type="file" id="price-file-input" class="hidden" accept=".xlsx, .xls, .csv">
+                    <p class="text-xs text-gray-400 mt-4">Columns: 'Customer', 'Maturity', 'Price - BPS'</p>
+                </div>
+            </div>
+            <div id="price-chart-wrapper" class="mt-8 hidden bg-white p-4 sm:p-6 rounded-xl shadow-md">
+                 <h2 class="text-xl font-semibold text-center mb-4 text-gray-700">Customer Pricing Curves</h2>
+                <div class="chart-container"> <canvas id="price-chart"></canvas> </div>
+            </div>
+            <div id="price-table-wrapper" class="mt-8 hidden"></div>
+            <hr class="my-12 border-gray-300">
+             <div id="dv01-drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 md:p-12 text-center cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-100">
+                <div class="flex flex-col items-center justify-center">
+                     <svg class="w-12 h-12 text-gray-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.826-1.106-2.156 0-2.982C10.544 5.22 11.271 5 12 5c.725 0 1.45.22 2.003.659a4.5 4.5 0 01.659 1.116" /></svg>
+                    <p class="text-lg font-medium text-gray-700">Drag & Drop DV01s Spreadsheet</p>
+                    <p class="text-sm text-gray-500 mt-1">or click to select file</p>
+                    <input type="file" id="dv01-file-input" class="hidden" accept=".xlsx, .xls, .csv">
+                    <p class="text-xs text-gray-400 mt-4">Columns: 'Customer', 'Maturity', 'DV01'</p>
+                </div>
+            </div>
+            <div id="dv01-table-wrapper" class="mt-8 hidden">
+                <h2 class="text-xl font-semibold text-center mb-4 text-gray-700">DV01s by Customer and Maturity</h2>
+                <div id="dv01-table-container" class="overflow-x-auto bg-white p-4 rounded-xl shadow-md"></div>
+            </div>
+            <hr class="my-12 border-gray-300">
+            <div id="pnl-table-wrapper" class="mt-8 hidden">
+                 <h2 class="text-xl font-semibold text-center mb-4 text-gray-700">P/L per Million</h2>
+                <div id="pnl-table-container" class="overflow-x-auto bg-white p-4 rounded-xl shadow-md"></div>
+            </div>
+        </main>
+    </div>
+    <script>
+        // --- DOM Elements ---
+        const creditDetailsInput = document.getElementById("credit-details");
+        const errorMessage = document.getElementById("error-message");
+        const errorText = document.getElementById("error-text");
+        const riskDropZone = document.getElementById("risk-drop-zone");
+        const riskFileInput = document.getElementById("risk-file-input");
+        const riskChartsContainer = document.getElementById("risk-charts-container");
+        const mainRiskChartTitle = document.getElementById("main-risk-chart-title");
+        const priceDropZone = document.getElementById("price-drop-zone");
+        const priceFileInput = document.getElementById("price-file-input");
+        const priceChartWrapper = document.getElementById("price-chart-wrapper");
+        const priceChartCanvas = document.getElementById("price-chart");
+        const priceTableWrapper = document.getElementById("price-table-wrapper");
+        const dv01DropZone = document.getElementById("dv01-drop-zone");
+        const dv01FileInput = document.getElementById("dv01-file-input");
+        const dv01TableWrapper = document.getElementById("dv01-table-wrapper");
+        const dv01TableContainer = document.getElementById("dv01-table-container");
+        const pnlTableWrapper = document.getElementById("pnl-table-wrapper");
+        const pnlTableContainer = document.getElementById("pnl-table-container");
+
+        // --- Global Data State ---
+        let processedRiskData = null;
+        let processedPriceData = null;
+        let processedDv01Data = null;
+        
+        // --- Chart State ---
+        let activeRiskCharts = [];
+        let priceChart = null;
+        
+        // --- Color Palette ---
+        const colorPalette = ["rgba(59, 130, 246, 0.7)", "rgba(239, 68, 68, 0.7)", "rgba(22, 163, 74, 0.7)", "rgba(249, 115, 22, 0.7)", "rgba(139, 92, 246, 0.7)"];
+        const borderPalette = ["rgb(59, 130, 246)", "rgb(239, 68, 68)", "rgb(22, 163, 74)", "rgb(249, 115, 22)", "rgb(139, 92, 246)"];
+
+        // --- Generic File Handler ---
+        function setupDropZone(dropZoneEl, fileInputEl, fileHandler) {
+            dropZoneEl.addEventListener("click", () => fileInputEl.click());
+            fileInputEl.addEventListener("change", e => {
+                const files = e.target.files;
+                if (files.length > 0) fileHandler(files[0]);
+            });
+            dropZoneEl.addEventListener("dragover", e => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZoneEl.classList.add("drag-over");
+            });
+            dropZoneEl.addEventListener("dragleave", e => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZoneEl.classList.remove("drag-over");
+            });
+            dropZoneEl.addEventListener("drop", e => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZoneEl.classList.remove("drag-over");
+                const files = e.dataTransfer.files;
+                if (files.length > 0) fileHandler(files[0]);
+            });
+        }
+
+        function handleFile(file, processor) {
+            hideError();
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: "array" });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false });
+                    if (jsonData.length === 0) throw new Error("The spreadsheet is empty.");
+                    processor(jsonData);
+                } catch (err) {
+                    showError(\`Failed to process spreadsheet. Details: \${err.message}\`);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- Risk Chart Logic ---
+        function processAndRenderRiskCharts(data) {
+            const keys = Object.keys(data[0]);
+            const maturityKey = keys.find(k => "maturity" === k.toLowerCase());
+            const riskKey = keys.find(k => "risk" === k.toLowerCase());
+            const customerKey = keys.find(k => "customer" === k.toLowerCase());
+            if (!maturityKey || !riskKey || !customerKey) {
+                showError("Risk spreadsheet must contain 'Customer', 'Maturity', and 'Risk' columns.");
+                return;
+            }
+            clearRiskCharts();
+            const customerData = {};
+            const allMaturities = new Set;
+            data.forEach(row => {
+                const customer = row[customerKey];
+                const maturity = row[maturityKey];
+                const risk = parseFloat(row[riskKey]);
+                if (isNaN(risk)) return;
+                customerData[customer] || (customerData[customer] = {});
+                allMaturities.add(maturity);
+                customerData[customer][maturity] = (customerData[customer][maturity] || 0) + risk;
+            });
+            const sortedMaturities = Array.from(allMaturities).sort((a, b) => new Date(a) - new Date(b));
+            const sortedCustomers = Object.keys(customerData).sort();
+            processedRiskData = { customers: sortedCustomers, maturities: sortedMaturities, data: customerData };
+            mainRiskChartTitle.textContent = \`Risk Profile for: \${creditDetailsInput.value || "Untitled Credit"}\`;
+            let totalGroupedNotional = 0;
+            let absoluteGroupedNotional = 0;
+            const groupedDatasets = sortedCustomers.map((customer, index) => {
+                const dataPoints = sortedMaturities.map(maturity => customerData[customer][maturity] || 0);
+                totalGroupedNotional += dataPoints.reduce((sum, val) => sum + val, 0);
+                absoluteGroupedNotional += dataPoints.reduce((sum, val) => sum + Math.abs(val), 0);
+                const colorIndex = index % colorPalette.length;
+                return {
+                    label: customer,
+                    data: dataPoints,
+                    backgroundColor: colorPalette[colorIndex],
+                    borderColor: borderPalette[colorIndex],
+                    borderWidth: 1
+                };
+            });
+            renderGroupedRiskChart("Aggregated View", sortedMaturities, groupedDatasets, totalGroupedNotional, absoluteGroupedNotional);
+            sortedCustomers.forEach((customer, index) => {
+                const riskDataPoints = sortedMaturities.map(maturity => customerData[customer][maturity] || 0);
+                const totalIndividualNotional = riskDataPoints.reduce((sum, val) => sum + val, 0);
+                const absoluteIndividualNotional = riskDataPoints.reduce((sum, val) => sum + Math.abs(val), 0);
+                const colorIndex = index % colorPalette.length;
+                renderIndividualRiskChart(customer, sortedMaturities, riskDataPoints, colorPalette[colorIndex], borderPalette[colorIndex], totalIndividualNotional, absoluteIndividualNotional);
+            });
+            riskChartsContainer.classList.remove("hidden");
+            tryRenderPnlTable();
+        }
+
+        function createChartScaffold(container, title, totalNotional, absoluteNotional) {
+            const chartDiv = document.createElement("div");
+            chartDiv.className = "bg-white p-4 sm:p-6 rounded-xl shadow-md mb-8";
+            const titleContainer = document.createElement("div");
+            titleContainer.className = "text-center mb-4";
+            const chartSubTitle = document.createElement("h3");
+            chartSubTitle.className = "text-xl font-semibold text-gray-700";
+            chartSubTitle.textContent = title;
+            titleContainer.appendChild(chartSubTitle);
+            if (totalNotional !== undefined && absoluteNotional !== undefined) {
+                const formatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                const notionalText = document.createElement("p");
+                notionalText.className = "text-sm text-gray-500 mt-1";
+                notionalText.innerHTML = \`Total Notional: <span class="font-medium text-gray-600">\${formatter.format(totalNotional)}</span> | Absolute Notional: <span class="font-medium text-gray-600">\${formatter.format(absoluteNotional)}</span>\`;
+                titleContainer.appendChild(notionalText);
+            }
+            chartDiv.appendChild(titleContainer);
+            const canvasContainer = document.createElement("div");
+            canvasContainer.className = "chart-container";
+            const canvas = document.createElement("canvas");
+            canvasContainer.appendChild(canvas);
+            chartDiv.appendChild(canvasContainer);
+            container.appendChild(chartDiv);
+            return canvas;
+        }
+
+        function renderGroupedRiskChart(title, labels, datasets, totalNotional, absoluteNotional) {
+            const canvas = createChartScaffold(riskChartsContainer, title, totalNotional, absoluteNotional);
+            const newChart = new Chart(canvas.getContext("2d"), {
+                type: "bar",
+                data: { labels: labels, datasets: datasets },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: "Maturity" } }, y: { title: { display: true, text: "Risk" }, beginAtZero: true } }, plugins: { legend: { display: true, position: "top" }, tooltip: { enabled: true, mode: "index", intersect: false } } }
+            });
+            activeRiskCharts.push(newChart);
+        }
+
+        function renderIndividualRiskChart(customerName, labels, dataPoints, backgroundColor, borderColor, totalNotional, absoluteNotional) {
+            const canvas = createChartScaffold(riskChartsContainer, customerName, totalNotional, absoluteNotional);
+            const newChart = new Chart(canvas.getContext("2d"), {
+                type: "bar",
+                data: { labels: labels, datasets: [{ label: \`Risk for \${customerName}\`, data: dataPoints, backgroundColor: backgroundColor, borderColor: borderColor, borderWidth: 1 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: "Maturity" } }, y: { title: { display: true, text: "Risk" }, beginAtZero: true } }, plugins: { legend: { display: false }, tooltip: { enabled: true, mode: "index", intersect: false } } }
+            });
+            activeRiskCharts.push(newChart);
+        }
+
+        function clearRiskCharts() {
+            activeRiskCharts.forEach(chart => chart.destroy());
+            activeRiskCharts = [];
+            riskChartsContainer.innerHTML = "";
+            riskChartsContainer.appendChild(mainRiskChartTitle);
+        }
+
+        // --- Price Chart & Table Logic ---
+        function processAndRenderPriceChart(data) {
+            clearPriceDisplay();
+            const keys = Object.keys(data[0]);
+            const maturityKey = keys.find(k => "maturity" === k.toLowerCase());
+            const priceKey = keys.find(k => "price - bps" === k.toLowerCase());
+            const customerKey = keys.find(k => "customer" === k.toLowerCase());
+            if (!maturityKey || !priceKey || !customerKey) {
+                showError("Pricing spreadsheet must contain 'Customer', 'Maturity', and 'Price - BPS' columns.");
+                return;
+            }
+            const customerData = {};
+            const allMaturities = new Set;
+            data.forEach(row => {
+                const customer = row[customerKey];
+                const maturity = row[maturityKey];
+                const price = parseFloat(row[priceKey]);
+                if (isNaN(price)) return;
+                customerData[customer] || (customerData[customer] = {});
+                allMaturities.add(maturity);
+                customerData[customer][maturity] = price;
+            });
+            const sortedMaturities = Array.from(allMaturities).sort((a, b) => new Date(a) - new Date(b));
+            const sortedCustomers = Object.keys(customerData).sort();
+            const datasets = sortedCustomers.map((customer, index) => {
+                const dataPoints = sortedMaturities.map(maturity => customerData[customer][maturity] || null);
+                const colorIndex = index % colorPalette.length;
+                return {
+                    label: customer,
+                    data: dataPoints,
+                    backgroundColor: colorPalette[colorIndex],
+                    borderColor: borderPalette[colorIndex],
+                    borderWidth: 2,
+                    fill: false,
+                    tension: .1
+                };
+            });
+            const averageData = sortedMaturities.map(maturity => {
+                let sum = 0, count = 0;
+                sortedCustomers.forEach(customer => {
+                    if (customerData[customer][maturity] !== undefined && customerData[customer][maturity] !== null) {
+                        sum += customerData[customer][maturity];
+                        count++;
+                    }
+                });
+                return count > 0 ? sum / count : null;
+            });
+            const averagePriceMap = new Map;
+            sortedMaturities.forEach((m, i) => averagePriceMap.set(m, averageData[i]));
+            processedPriceData = { data: customerData, averages: averagePriceMap };
+            const averageDataset = {
+                label: "Average Price",
+                data: averageData,
+                borderColor: "rgba(0, 0, 0, 0.8)",
+                borderWidth: 2,
+                fill: false,
+                tension: .1,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                pointHoverRadius: 0
+            };
+            datasets.push(averageDataset);
+            renderPriceChart(sortedMaturities, datasets);
+            renderPriceTable(sortedMaturities, sortedCustomers, customerData, averageData);
+            tryRenderPnlTable();
+        }
+
+        function renderPriceChart(labels, datasets) {
+            if (priceChart) priceChart.destroy();
+            const ctx = priceChartCanvas.getContext("2d");
+            priceChart = new Chart(ctx, {
+                type: "line",
+                data: { labels: labels, datasets: datasets },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: "Maturity" } }, y: { title: { display: true, text: "Price - BPS" }, beginAtZero: false } }, plugins: { legend: { display: true, position: "top" }, tooltip: { enabled: true, mode: "index", intersect: false } } }
+            });
+            priceChartWrapper.classList.remove("hidden");
+        }
+
+        function renderPriceTable(maturities, customers, customerPriceData, averagePriceData) {
+            priceTableWrapper.innerHTML = "";
+            const title = document.createElement("h2");
+            title.className = "text-xl font-semibold text-center mb-4 text-gray-700";
+            title.textContent = "Customer Pricing Data (BPS)";
+            priceTableWrapper.appendChild(title);
+            const tableContainer = document.createElement("div");
+            tableContainer.className = "overflow-x-auto bg-white p-4 rounded-xl shadow-md";
+            const table = document.createElement("table");
+            table.className = "w-full text-sm text-left text-gray-500";
+            const thead = document.createElement("thead");
+            thead.className = "text-xs text-gray-700 uppercase bg-gray-50";
+            let headerRowHtml = '<tr><th scope="col" class="px-6 py-3">Customer</th>';
+            maturities.forEach(m => { headerRowHtml += \`<th scope="col" class="px-6 py-3 text-center">\${m}</th>\`; });
+            headerRowHtml += "</tr>";
+            thead.innerHTML = headerRowHtml;
+            table.appendChild(thead);
+            const tbody = document.createElement("tbody");
+            customers.forEach(customer => {
+                let bodyRowHtml = \`<tr class="bg-white border-b"><th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">\${customer}</th>\`;
+                maturities.forEach(maturity => {
+                    const value = customerPriceData[customer][maturity];
+                    bodyRowHtml += \`<td class="px-6 py-4 text-center">\${value !== undefined ? value.toFixed(2) : "N/A"}</td>\`;
+                });
+                bodyRowHtml += "</tr>";
+                tbody.innerHTML += bodyRowHtml;
+            });
+            let avgRowHtml = '<tr class="bg-gray-50 border-b"><th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">Average</th>';
+            averagePriceData.forEach(avg => { avgRowHtml += \`<td class="px-6 py-4 text-center font-semibold">\${avg !== null ? avg.toFixed(2) : "N/A"}</td>\`; });
+            avgRowHtml += "</tr>";
+            tbody.innerHTML += avgRowHtml;
+            table.appendChild(tbody);
+            tableContainer.appendChild(table);
+            priceTableWrapper.appendChild(tableContainer);
+            priceTableWrapper.classList.remove("hidden");
+        }
+
+        function clearPriceDisplay() {
+            if (priceChart) {
+                priceChart.destroy();
+                priceChart = null;
+            }
+            priceChartWrapper.classList.add("hidden");
+            priceTableWrapper.classList.add("hidden");
+        }
+
+        // --- DV01 Table Logic ---
+        function processAndRenderDV01Table(data) {
+            const keys = Object.keys(data[0]);
+            const maturityKey = keys.find(k => "maturity" === k.toLowerCase());
+            const dv01Key = keys.find(k => "dv01" === k.toLowerCase());
+            const customerKey = keys.find(k => "customer" === k.toLowerCase());
+            if (!maturityKey || !dv01Key || !customerKey) {
+                showError("DV01 spreadsheet must contain 'Customer', 'Maturity', and 'DV01' columns.");
+                return;
+            }
+            const pivotedData = {};
+            const allMaturities = new Set;
+            data.forEach(row => {
+                const customer = row[customerKey];
+                const maturity = row[maturityKey];
+                const dv01 = parseFloat(row[dv01Key]);
+                if (isNaN(dv01)) return;
+                pivotedData[customer] || (pivotedData[customer] = {});
+                allMaturities.add(maturity);
+                pivotedData[customer][maturity] = dv01;
+            });
+            processedDv01Data = { data: pivotedData };
+            const sortedMaturities = Array.from(allMaturities).sort((a, b) => new Date(a) - new Date(b));
+            const sortedCustomers = Object.keys(pivotedData).sort();
+            const table = document.createElement("table");
+            table.className = "w-full text-sm text-left text-gray-500";
+            const thead = document.createElement("thead");
+            thead.className = "text-xs text-gray-700 uppercase bg-gray-50";
+            let headerRow = '<tr><th scope="col" class="px-6 py-3">Customer</th>';
+            sortedMaturities.forEach(m => { headerRow += \`<th scope="col" class="px-6 py-3 text-center">\${m}</th>\`; });
+            headerRow += "</tr>";
+            thead.innerHTML = headerRow;
+            table.appendChild(thead);
+            const tbody = document.createElement("tbody");
+            const currencyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+            sortedCustomers.forEach(customer => {
+                let bodyRow = \`<tr class="bg-white border-b"><th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">\${customer}</th>\`;
+                sortedMaturities.forEach(maturity => {
+                    const value = pivotedData[customer][maturity];
+                    bodyRow += \`<td class="px-6 py-4 text-center">\${value !== undefined ? currencyFormatter.format(value) : "N/A"}</td>\`;
+                });
+                bodyRow += "</tr>";
+                tbody.innerHTML += bodyRow;
+            });
+            table.appendChild(tbody);
+            dv01TableContainer.innerHTML = "";
+            dv01TableContainer.appendChild(table);
+            dv01TableWrapper.classList.remove("hidden");
+            tryRenderPnlTable();
+        }
+
+        // --- P/L Table Logic ---
+        function tryRenderPnlTable() {
+            if (!processedRiskData || !processedPriceData || !processedDv01Data) return;
+            const { customers, maturities } = processedRiskData;
+            const priceData = processedPriceData.data;
+            const averagePrices = processedPriceData.averages;
+            const dv01Data = processedDv01Data.data;
+            const table = document.createElement("table");
+            table.className = "w-full text-sm text-left text-gray-500";
+            const thead = document.createElement("thead");
+            thead.className = "text-xs text-gray-700 uppercase bg-gray-50";
+            let headerRowHtml = '<tr><th scope="col" class="px-6 py-3">Customer</th>';
+            maturities.forEach(m => { headerRowHtml += \`<th scope="col" class="px-6 py-3 text-center">\${m}</th>\`; });
+            headerRowHtml += "</tr>";
+            thead.innerHTML = headerRowHtml;
+            table.appendChild(thead);
+            const tbody = document.createElement("tbody");
+            const currencyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+            customers.forEach(customer => {
+                let bodyRowHtml = \`<tr class="bg-white border-b"><th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">\${customer}</th>\`;
+                maturities.forEach(maturity => {
+                    const customerPrice = priceData[customer]?.[maturity];
+                    const averagePrice = averagePrices.get(maturity);
+                    const dv01 = dv01Data[customer]?.[maturity];
+                    let pnlCell = '<td class="px-6 py-4 text-center">N/A</td>';
+                    if (customerPrice !== undefined && averagePrice !== undefined && dv01 !== undefined) {
+                        const pnl = (customerPrice - averagePrice) * dv01;
+                        const pnlColor = pnl >= 0 ? "text-green-600" : "text-red-600";
+                        pnlCell = \`<td class="px-6 py-4 text-center font-semibold \${pnlColor}">\${currencyFormatter.format(pnl)}</td>\`;
+                    }
+                    bodyRowHtml += pnlCell;
+                });
+                bodyRowHtml += "</tr>";
+                tbody.innerHTML += bodyRowHtml;
+            });
+            table.appendChild(tbody);
+            pnlTableContainer.innerHTML = "";
+            pnlTableContainer.appendChild(table);
+            pnlTableWrapper.classList.remove("hidden");
+        }
+
+        // --- Utility Functions ---
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove("hidden");
+        }
+
+        function hideError() {
+            errorMessage.classList.add("hidden");
+        }
+
+        // --- Initial Setup ---
+        setupDropZone(riskDropZone, riskFileInput, (file) => handleFile(file, processAndRenderRiskCharts));
+        setupDropZone(priceDropZone, priceFileInput, (file) => handleFile(file, processAndRenderPriceChart));
+        setupDropZone(dv01DropZone, dv01FileInput, (file) => handleFile(file, processAndRenderDV01Table));
+    <\/script>
+</body>
+</html>
+`,
             taxPlinkov2: `
 <!DOCTYPE html>
 <html lang="en">
@@ -259,7 +781,7 @@
         { question: "Which of the following is generally NOT considered taxable income?", answers: ["Unemployment benefits", "A gift from a friend", "Rental income", "Alimony received (divorce after 2018)"], correct: 1 },
         { question: "The Earned Income Tax Credit (EITC) is a benefit for working people with...", answers: ["High income", "Low to moderate income", "Only investment income", "No children"], correct: 1 },
         { question: "What does the 'Residency Test' for a qualifying child mean?", answers: ["They must be a U.S. citizen", "They must have a passport", "They must live with you for more than half the year", "They must have their own room"], correct: 2 },
-        { question: "Which of these is an 'above-the-line' deduction used to calculate AGI?", answers: ["Charitable contributions", "Mortgage interest", "Student loan interest", "State and local taxes"], correct: 2 },
+        { question: "Which of these is an 'above-the-line' deduction used to calculate AGI?", answers: ["Charitable contributions", "Mortgage interest", "Student loan interest", "IRA contributions"], correct: 2 },
         { question: "What is the purpose of Form W-4?", answers: ["To report your income to the IRS", "To tell your employer how much tax to withhold", "To request a tax extension", "To claim a dependent"], correct: 1 },
         { question: "If you are self-employed, you are generally responsible for paying which tax yourself?", answers: ["Property Tax", "Sales Tax", "Self-Employment Tax (Social Security & Medicare)", "Gasoline Tax"], correct: 2 },
         { question: "A tax credit that can result in a refund even if you don't owe any tax is called a...", answers: ["Nonrefundable credit", "Business credit", "Refundable credit", "Standard credit"], correct: 2 },
@@ -2133,11 +2655,13 @@
 `
         };
 
+        // This part of the script remains unchanged as it correctly handles the tabbing logic.
         const gameFrame = document.getElementById('game-frame');
         const tabs = document.getElementById('tabs');
 
         function loadGame(gameId) {
-            const content = gameContent[gameId];
+            // Trim the content to avoid issues with leading/trailing whitespace
+            const content = gameContent[gameId]?.trim();
             if (content) {
                 gameFrame.srcdoc = content;
             }
@@ -2145,11 +2669,9 @@
 
         tabs.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON') {
-                // Deactivate all buttons
                 tabs.querySelectorAll('.tab-button').forEach(button => {
                     button.classList.remove('active');
                 });
-                // Activate the clicked button
                 e.target.classList.add('active');
                 
                 const gameId = e.target.dataset.game;
@@ -2157,9 +2679,9 @@
             }
         });
 
-        // Load the default game on initial page load
+        // Load the default project on initial page load
         window.onload = () => {
-            loadGame('taxPlinkov2');
+            loadGame('cdsVisualizer');
         };
     </script>
 
